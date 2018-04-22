@@ -12,7 +12,7 @@ using namespace std;
 class Obj{
 public:
   virtual ostream& print(ostream& out=cout)=0;
-  virtual int getDouble()=0;
+  virtual double getDouble()=0;
   virtual char getChar()=0;
 
 };
@@ -22,11 +22,11 @@ ostream& operator<<(ostream& out, Obj* obj){
 }
 
 class Double :public Obj{
-  int x;
+  double x;
 public:
-  Double(int val): x(val) {}
+  Double(double val): x(val) {}
   ostream& print(ostream& out) { return out<<x;}
-  int getDouble() { return x;}
+  double getDouble() { return x;}
   char getChar(){ return (char)x;}
 };
 
@@ -37,52 +37,55 @@ public:
   Char(char ch): s{ch} {}
   ostream& print(ostream& out){ return out<<s;}
   char getChar() {return s;}
-  int getDouble(){return (int)s;}
+  double getDouble(){return (int)s;}
 };
 
 
-string type_code(istringstream is){
+string type_code(const string& name){
+  ifstream fin(name);
+
+  string s, res;
+  getline(fin, s); //skip header
+  getline(fin, s); //read one line of data
+  istringstream ss{s};  
+
+  while(getline(ss,s,','))
   
-  //code[i]=1 if objs of col i are numbers
-  //and 0 otherwise.
-  //length(s) = num of data cols
-  // 
-  //ifstream f(name);
-  //if(!f) throw exep("couldn't open");
-  //string s,t, code;
-  //getline(f, s); //skip the header(if it exists or not)
-  //getline(f,s); //read one line of data
-  //cout<<"this whole line:"<<s<<"\n\n";
-  //istringstream ss(s);
-  string t;
-  while(getline(is,t,','))
+    isdigit(s[0])? res.append("1"):res.append("0");
+
+  fin.close();
   
-    isdigit(t[0])? code.append("1"):code.append("0");
-  
-  //f.close();
-  
-  return code;
+  return res;
 }
-  /*int sz = i;
-  float num = stof(s[0]);
-  cout<<num<<"\n";
-  */
+
   
 vector<Obj*> data_frame(string name){
 
-  ifstream fin(name);
 
-  string header;
-  getline(fin, header);
-
-  string s,temp;
-  getline(fin, s);
-  istringstream ss(s);
-  string code = type_code(ss);
+  string code = type_code(name);
+  vector<Obj*> res{code.length()};
   
-  double d; 
-  for(int i=0;(getline(ss,temp,',');++i)
-	a[i] = code[i] ? new Double{stod(temp)} : new Char{temp};
+  ifstream fin{name};
+ 
+  string s;
+  getline(fin,s); //skip header
+
+  getline(fin,s); //read data
+
+  istringstream ss{s};
+  cout<<"s="<<s<<endl;
+  cout<<"code="<<code<<endl;
+  for(int i=0; i!= code.length();++i){
+    getline(ss,s,',');
+    res[i] = code[i]=='1' ? static_cast<Obj*>(new Double{stod(s)}) : static_cast<Obj*>(new Char{s[0]});
+  }
+
+  cout<<endl;
+  fin.close();
+
+  return res;
+}
+  
 
       
 int main(){
@@ -90,7 +93,7 @@ int main(){
   //  int n=s.length();
   //read_csv("Credit.csv", s)
 
-  Obj* a[2];
+  /* Obj* a[2];
   a[0] = new Double{5};
   a[1] = new Char{'a'};
   a[0]->print();
@@ -98,5 +101,8 @@ int main(){
   int res = a[0]->getDouble();
   cout<<res;
   cout<<"\n"<<a[0]<<"\n"<<a[1];
+  */
+  vector<Obj*> v = data_frame("Credit.csv");
+  cout<<v[8];
   return 0;
 }
