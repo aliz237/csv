@@ -13,7 +13,7 @@ class Obj{
 public:
   virtual ostream& print(ostream& out=cout)=0;
   virtual double getDouble()=0;
-  virtual char getChar()=0;
+  virtual string getString()=0;
 
 };
 
@@ -27,17 +27,17 @@ public:
   Double(double val): x(val) {}
   ostream& print(ostream& out) { return out<<x;}
   double getDouble() { return x;}
-  char getChar(){ return (char)x;}
+  string getString(){ return to_string(x);}
 };
 
-class Char :public Obj{
-  char s;
+class String :public Obj{
+  string s;
 public:
   
-  Char(char ch): s{ch} {}
+  String(string str): s{str} {}
   ostream& print(ostream& out){ return out<<s;}
-  char getChar() {return s;}
-  double getDouble(){return (int)s;}
+  string getString() {return s;}
+  double getDouble(){return stod(s);}
 };
 
 
@@ -77,32 +77,19 @@ vector<Obj*> data_frame(string name){
   cout<<"code="<<code<<endl;
   for(int i=0; i!= code.length();++i){
     getline(ss,s,',');
-    res[i] = code[i]=='1' ? static_cast<Obj*>(new Double{stod(s)}) : static_cast<Obj*>(new Char{s[0]});
+    res[i] = code[i]=='1' ? static_cast<Obj*>(new Double{stod(s)}) : static_cast<Obj*>(new String{s});
   }
 
-  cout<<endl;
   fin.close();
 
-  return res;
+  return move(res);
 }
   
 
       
 int main(){
-  //  string s = type_code("Credit.csv");
-  //  int n=s.length();
-  //read_csv("Credit.csv", s)
 
-  /* Obj* a[2];
-  a[0] = new Double{5};
-  a[1] = new Char{'a'};
-  a[0]->print();
-  a[1]->print();
-  int res = a[0]->getDouble();
-  cout<<res;
-  cout<<"\n"<<a[0]<<"\n"<<a[1];
-  */
   vector<Obj*> v = data_frame("Credit.csv");
-  cout<<v[8];
+  cout<<v[9];
   return 0;
 }
