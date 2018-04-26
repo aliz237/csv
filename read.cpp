@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <sstream>
 #include <vector>
+#include <memory>
 
 using namespace std;
 
@@ -14,8 +15,10 @@ public:
   virtual ostream& print(ostream& out=cout)=0;
   virtual double getDouble()=0;
   virtual string getString()=0;
+  virtual ~Obj(){}
 
 };
+
 
 ostream& operator<<(ostream& out, Obj* obj){
   return obj->print(out);
@@ -25,6 +28,7 @@ class Double :public Obj{
   double x;
 public:
   Double(double val): x(val) {}
+  ~Double(){}
   ostream& print(ostream& out) { return out<<x;}
   double getDouble() { return x;}
   string getString(){ return to_string(x);}
@@ -38,6 +42,7 @@ public:
   ostream& print(ostream& out){ return out<<s;}
   string getString() {return s;}
   double getDouble(){return stod(s);}
+  ~String(){}
 };
 
 
@@ -59,12 +64,11 @@ string type_code(const string& name){
 }
 
   
-vector<Obj*> data_frame(string name){
+vector<unique_ptr<Obj>> data_frame(string name){
 
 
   string code = type_code(name);
-  vector<Obj*> res{code.length()};
-  
+  vector<unique_ptr<Obj>> res;
   ifstream fin{name};
  
   string s;
@@ -77,19 +81,31 @@ vector<Obj*> data_frame(string name){
   cout<<"code="<<code<<endl;
   for(int i=0; i!= code.length();++i){
     getline(ss,s,',');
-    res[i] = code[i]=='1' ? static_cast<Obj*>(new Double{stod(s)}) : static_cast<Obj*>(new String{s});
+    auto o = code[i]=='1'? unique_ptr<Obj>{new Double{stod(s)}} :
+    unique_ptr<Obj>{new String{s}};
+    res.push_back(move(o));
   }
 
   fin.close();
 
-  return move(res);
-}
+  return res;
+  }
   
-
+Obj* f(){
+  return new Double{5};
+}
       
 int main(){
 
-  vector<Obj*> v = data_frame("Credit.csv");
-  cout<<v[9];
+  vector<unique_ptr<Obj>> w = data_frame("Credit.csv");
+  //w[0]->print();
+
+  vector<vector<unique_ptr<Obj>>> v{2};
+  v[0].push_back(unique_ptr<Obj>{new Double{3}});
+  v[1].push_back(unique_ptr<Obj>{new Double{3}});
+  v[0].push_back(unique_ptr<Obj>{new Double{2}});
+  v[0][0]->print();
+  v[0][1]->print();
+  v[1][0]->print();
   return 0;
 }
