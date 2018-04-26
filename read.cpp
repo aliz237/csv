@@ -45,6 +45,7 @@ public:
   ~String(){}
 };
 
+using df = vector<vector<unique_ptr<Obj>>>;
 
 string type_code(const string& name){
   ifstream fin(name);
@@ -64,48 +65,49 @@ string type_code(const string& name){
 }
 
   
-vector<unique_ptr<Obj>> data_frame(string name){
-
+vector<vector<unique_ptr<Obj>>> data_frame(string name){
 
   string code = type_code(name);
-  vector<unique_ptr<Obj>> res;
+  vector<vector<unique_ptr<Obj>>> res{code.length()};
   ifstream fin{name};
  
   string s;
   getline(fin,s); //skip header
 
-  getline(fin,s); //read data
+  while(getline(fin,s)){
+    
+    istringstream ss{s};
 
-  istringstream ss{s};
-  cout<<"s="<<s<<endl;
-  cout<<"code="<<code<<endl;
-  for(int i=0; i!= code.length();++i){
-    getline(ss,s,',');
-    auto o = code[i]=='1'? unique_ptr<Obj>{new Double{stod(s)}} :
-    unique_ptr<Obj>{new String{s}};
-    res.push_back(move(o));
+    for(int j=0; j!= code.length();++j){
+      getline(ss,s,',');
+      auto o = code[j]=='1'? unique_ptr<Obj>{new Double{stod(s)}} :
+      unique_ptr<Obj>{new String{s}};
+      res[j].push_back(move(o));
+    }
   }
 
   fin.close();
 
   return res;
-  }
+}
   
-Obj* f(){
-  return new Double{5};
+void head(df &d){
+  int col = d.size(), row=d[0].size();
+
+  for(int i=0; i!=row; ++i){
+    for(int j=0; j!=col; ++j){
+      d[j][i]->print(); cout<<" ";
+    }
+    cout<<endl;
+  }
+    
 }
       
 int main(){
+  
+  df w = data_frame("Credit.csv");
 
-  vector<unique_ptr<Obj>> w = data_frame("Credit.csv");
-  //w[0]->print();
+  head(w);
 
-  vector<vector<unique_ptr<Obj>>> v{2};
-  v[0].push_back(unique_ptr<Obj>{new Double{3}});
-  v[1].push_back(unique_ptr<Obj>{new Double{3}});
-  v[0].push_back(unique_ptr<Obj>{new Double{2}});
-  v[0][0]->print();
-  v[0][1]->print();
-  v[1][0]->print();
   return 0;
 }
