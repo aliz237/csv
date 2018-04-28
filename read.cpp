@@ -29,7 +29,10 @@ class Double :public Obj{
 public:
   Double(double val): x(val) {}
   ~Double(){}
-  ostream& print(ostream& out) { return out<<x;}
+  ostream& print(ostream& out) {
+    out.precision(20);
+    return out<<x;
+  }
   double getDouble() { return x;}
   string getString(){ return to_string(x);}
 };
@@ -91,8 +94,9 @@ vector<vector<unique_ptr<Obj>>> data_frame(string name){
   return res;
 }
   
-void head(df &d){
-  int col = d.size(), row=d[0].size();
+void head(df &d, int n){
+  int col = d.size();
+  int row= n<d[0].size()? n : d[0].size();
 
   for(int i=0; i!=row; ++i){
     for(int j=0; j!=col; ++j){
@@ -105,9 +109,9 @@ void head(df &d){
       
 int main(){
   
-  df w = data_frame("Credit.csv");
+  df w = data_frame("big.csv");
 
-  head(w);
+  head(w,2);
 
   return 0;
 }
