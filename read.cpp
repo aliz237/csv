@@ -5,8 +5,11 @@
 #include <sstream>
 #include <vector>
 #include <memory>
+#include <algorithm>
+#include <chrono>
 
 using namespace std;
+using namespace std::chrono;
 
 
 
@@ -72,6 +75,8 @@ vector<vector<unique_ptr<Obj>>> data_frame(string name){
 
   string code = type_code(name);
   vector<vector<unique_ptr<Obj>>> res{code.length()};
+  vector<vector<string>> buff{code.length()};
+  
   ifstream fin{name};
  
   string s;
@@ -83,12 +88,18 @@ vector<vector<unique_ptr<Obj>>> data_frame(string name){
 
     for(int j=0; j!= code.length();++j){
       getline(ss,s,',');
-      auto o = code[j]=='1'? unique_ptr<Obj>{new Double{stod(s)}} :
-      unique_ptr<Obj>{new String{s}};
-      res[j].push_back(move(o));
+      buff[j].push_back(s);
     }
   }
 
+  for(int j=0; j!=code.length(); ++j){
+    if(code[j]=='1')
+      for(auto &s:buff[j])
+	res[j].push_back(unique_ptr<Obj>{new Double{stod(s)}});
+    else
+      for(auto &s:buff[j])
+	res[j].push_back(unique_ptr<Obj>{new String{s}});
+  }
   fin.close();
 
   return res;
@@ -108,10 +119,23 @@ void head(df &d, int n){
 }
       
 int main(){
-  
-  df w = data_frame("big.csv");
 
-  head(w,2);
+  auto t1=system_clock::now();
+  df w = data_frame("big.csv");
+  auto t2=system_clock::now();
+  cout<<duration_cast<milliseconds>(t2-t1).count();
+  //head(w,2);
+
+  /*
+  ifstream fin("big.csv");
+  string s;
+  
+      getline(fin,s);
+    cout<<"("<<s<<")";
+    getline(fin,s);
+    cout<<"("<<s<<")";
+    fin.close();
+  */
 
   return 0;
 }
