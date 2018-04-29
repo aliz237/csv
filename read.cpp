@@ -5,9 +5,10 @@
 #include <sstream>
 #include <vector>
 #include <memory>
+#include <chrono>
 
 using namespace std;
-
+using namespace std::chrono;
 
 
 class Obj{
@@ -108,10 +109,11 @@ void head(df &d, int n){
 }
       
 int main(){
-  
+  auto t1=system_clock::now();
   df w = data_frame("big.csv");
-
-  head(w,2);
+  auto t2=system_clock::now();
+  cout<<duration_cast<milliseconds>(t2-t1).count();
+  //  head(w,2);
 
   return 0;
 }
